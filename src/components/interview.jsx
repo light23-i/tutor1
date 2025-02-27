@@ -41,9 +41,23 @@ const RetellAudioCall = () => {
       });
 
       retellClient.on("update", (update) => {
-        const lastKey = Object.keys(update.transcript).pop();
-        if (update.transcript && update.transcript[lastKey]?.role === "agent") {
-          setTranscripts(prev => [...prev, update.transcript[lastKey].content]);
+        console.log("Received update:", update);
+        
+        if (update.transcript) {
+          // Extract agent messages from the transcript
+          const agentMessages = Object.values(update.transcript)
+            .filter(msg => msg.role === "agent")
+            .map(msg => msg.content);
+          
+          // Only display the last agent message
+          if (agentMessages.length > 0) {
+            const lastMessage = agentMessages[agentMessages.length - 1];
+            setTranscripts([lastMessage]);
+          }
+        }
+        
+        if (update.isSpeaking !== undefined) {
+          setIsAgentSpeaking(update.isSpeaking);
         }
       });
 
@@ -116,17 +130,24 @@ const RetellAudioCall = () => {
   };
 
   return (
-    <div className="interview-container">
+    <div className="container">
+      <header className="header">
+        <h1 className="header-title">Interview Practice</h1>
+        <nav className="header-nav">
+          <a href="/" className="nav-link">
+            <span>Back to Home</span>
+          </a>
+        </nav>
+      </header>
 
-      <main className="interview-content">
+      <main className="main-content">
         {error && (
           <div className="error-message">
-            <span>⚠️</span>
             <p>{error}</p>
           </div>
         )}
 
-        <section className="interview-main">
+        <section className="interview-section">
           <div className="status-section">
             {callStatus && (
               <div className="call-status">
@@ -143,7 +164,7 @@ const RetellAudioCall = () => {
               <p>Speak clearly and answer questions as you would in a real interview.</p>
             </div>
             
-            <div className={`lottie-container ${isAgentSpeaking ? 'speaking' : ''}`}>
+            <div className="animation-container">
               <Lottie 
                 animationData={voiceWaveAnimation}
                 loop={true}
@@ -151,6 +172,12 @@ const RetellAudioCall = () => {
                 style={{ width: '100%', height: '100%' }}
               />
             </div>
+
+            {transcripts.length > 0 && (
+              <div className="transcript-text">
+                {transcripts[0]}
+              </div>
+            )}
 
             <div className="control-buttons">
               <button 
@@ -172,19 +199,6 @@ const RetellAudioCall = () => {
             </div>
           </div>
         </section>
-
-        {transcripts.length > 0 && (
-          <section className="transcript-section">
-            <h2>Interview Transcript</h2>
-            <div className="transcript-content">
-              {transcripts.map((text, index) => (
-                <div key={index} className="message-bubble">
-                  <p className="message-text">{text}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
       </main>
     </div>
   );
