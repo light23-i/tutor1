@@ -6,7 +6,7 @@ import Lottie from 'lottie-react';
 import voiceWaveAnimation from '../Animation - 1740202389597.json';
 import './RetellAudioCall.css';
 
-const BACKEND_URL = 'http://localhost:5002';
+const BACKEND_URL = 'https://backend-tutor.vercel.app';
 
 const RetellAudioCall = () => {
   const [isCallActive, setIsCallActive] = useState(false);
